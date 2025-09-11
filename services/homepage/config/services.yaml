@@ -1,0 +1,14 @@
+---
+# Services for Homepage dashboard
+
+- Data:
+  - Dagster:
+      href: https://dagster.corellianengineeringco.com
+      description: Data orchestration platform
+      icon: https://cdn.prod.website-files.com/681399f654933b29e12fb8bd/6814963071ec27bc6d2b8dee_dagster-primary-mark.svg.svg
+
+- Apps:
+  - Corellian War Room:
+      href: https://corellianwarroom.com/
+      description: Fantasy Football War Room
+      icon: mdi-football

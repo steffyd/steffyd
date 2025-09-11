@@ -1,0 +1,30 @@
+---
+# Kubernetes configuration for Homepage
+# For configuration options and examples, please see:
+# https://gethomepage.dev/configs/kubernetes/
+
+# Example Kubernetes configurations (uncomment and modify as needed):
+
+# Local Kubernetes cluster
+# local-k8s:
+#   server: https://kubernetes.default.svc.cluster.local
+#   token: your-service-account-token
+#   namespace: default
+
+# Remote Kubernetes cluster
+# remote-k8s:
+#   server: https://your-k8s-cluster.com:6443
+#   token: your-service-account-token
+#   namespace: default
+#   skipTLSVerify: false
+#   ca: /path/to/ca.crt
+
+# Multiple clusters
+# cluster-1:
+#   server: https://cluster1.example.com:6443
+#   token: token-for-cluster-1
+#   namespace: default
+# cluster-2:
+#   server: https://cluster2.example.com:6443
+#   token: token-for-cluster-2
+#   namespace: production

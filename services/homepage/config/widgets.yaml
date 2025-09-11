@@ -1,0 +1,10 @@
+- datetime:
+    format:
+      dateStyle: short
+      timeStyle: short
+      hour12: true
+
+- openmeteo:
+    timezone: America/Los_Angeles
+    units: imperial
+    cache: 5

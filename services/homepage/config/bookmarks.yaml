@@ -1,0 +1,95 @@
+---
+- Developer:
+    - Github:
+        - icon: https://cdn-icons-png.flaticon.com/512/25/25231.png
+          href: https://github.com/
+    - Gemini:
+        - icon: https://cdn.jsdelivr.net/gh/walkxcode/dashboard-icons/png/google-gemini.png
+          href: https://gemini.google.com/
+          description: Google Gemini
+    - Google Cloud:
+        - icon: /images/google_cloud.jpeg
+          href: https://console.cloud.google.com
+
+- Streaming:
+    - YouTube TV:
+        - icon: https://play-lh.googleusercontent.com/5zpYRYi0mRIQi56FyDibKR3sWi-UfkD2QFKRdhZzK7Hh3e9l_9y5i0z3lQWhmJmUzh4
+          href: https://tv.youtube.com/
+          description: YouTube TV
+    - Disney+:
+        - icon: https://upload.wikimedia.org/wikipedia/commons/f/fa/Disney_plus_icon.png
+          href: https://www.disneyplus.com/
+          description: Disney+
+    - Hulu:
+        - icon: https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTgw3Oa3mDHT0X3GP5Y25BjmMEBKFKwFyy9oA&s
+          href: https://www.hulu.com/
+          description: Hulu
+    - Amazone Prime:
+        - icon: https://www.citypng.com/public/uploads/preview/amazon-prime-ios-app-icon-701751695133984u2yuon8nlu.png
+          href: https://www.amazon.com/Amazon-Prime-Video/b?ie=UTF8&node=166412011
+          description: Amazon Prime
+    - Max:
+        - icon: https://seeklogo.com/images/M/max-logo-968C76EA0B-seeklogo.com.png
+          href: https://www.max.com/
+          description: Max
+    - Plex:
+        - icon: https://e1.pngegg.com/pngimages/253/744/png-clipart-clay-os-6-a-macos-icon-plex-yellow-arrow-thumbnail.png
+          href: https://app.plex.tv/desktop/#!/ 
+          description: Plex
+    - ESPN+:
+        - icon: https://upload.wikimedia.org/wikipedia/commons/8/87/Espn%2B.png
+          href: https://www.espn.com/espnplus/
+          description: ESPN+
+    - Netflix:
+        - icon: https://www.citypng.com/public/uploads/preview/round-netflix-logo-701751694792607bemlfazrrl.png
+          href: https://www.netflix.com/
+          description: Netflix
+    - Apple TV+:
+        - icon: https://static.cdnlogo.com/logos/a/75/apple-tv-plus.svg
+          href: https://tv.apple.com/
+          description: Apple TV+
+
+- Daily Puzzles:
+    - Wordle:
+        - icon: https://static01.nyt.com/images/2022/03/02/crosswords/alpha-wordle-icon-new/alpha-wordle-icon-new-smallSquare252-v3.png?format=pjpg&quality=75&auto=webp&disable=upscale
+          href: https://www.nytimes.com/games/wordle/index.html
+          description: Wordle
+    
+    - Dungleon:
+        - icon: https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQVbgao9IcbOZAF4_OMDaN2pktK5MBxXQzZpQ&s
+          href: https://www.dungleon.com/
+          description: Dungleon
+    - Chrono:
+        - icon: mdi-clock-fast
+          href: https://chrono.quest/
+          description: Chrono
+    - Sports Connection:
+        - icon: mdi-strategy
+          href: https://www.nytimes.com/athletic/connections-sports-edition
+          description: Sports Connection 
+
+- Misc:
+    - Tessie:
+        - icon: https://cdn.prod.website-files.com/636438cc25b4915a5b7bc573/67dc8932ec6856d718806fbb_favicon-32x32-dark.png
+          href: https://my.tessie.com
+          description: Tessie's Dashboard
+    - Monarch:
+        - icon: /images/monarch_money.svg
+          href: https://app.monarchmoney.com/dashboard
+          description: Monarch Money
+    - SEI:
+        - icon: https://cdn.sei-connect.com/logos/SEI/Logo-Black.png
+          href: https://login.sei-connect.com/login/error?errorMessage=Your%20session%20has%20timed%20out
+          description: SEI Connect
+    - Overseerr:
+        - icon: https://cdn.jsdelivr.net/gh/walkxcode/dashboard-icons/png/overseerr.png
+          href: https://requests.johanhenkens.com/login
+          description: Overseerr
+    - FantasyPros:
+        - icon: https://blog.fantasypros.com/content/images/2024/08/fantasypros_icon_fullcolor_whitebg_white_fill.png
+          href: https://www.fantasypros.com/
+          description: FantasyPros
+    - YahooFantasy:
+        - icon: https://preview.redd.it/new-yahoo-fantasy-sports-logo-v0-mnhmqeelz6ld1.jpeg?auto=webp&s=fc8977c38d8bbd4c5590753d251752720a2cee36
+          href: https://football.fantasysports.yahoo.com/?guccounter=1
+          description: Yahoo Fantasy

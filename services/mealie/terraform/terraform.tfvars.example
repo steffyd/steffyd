@@ -1,0 +1,16 @@
+# Terraform variables for Mealie service
+# Copy this file to terraform.tfvars and fill in your values
+
+# GCP Configuration
+project_id = "steffyd"
+region     = "us-central1"
+
+# Mealie Configuration
+mealie_domain = "mealie.steffyd.com"
+
+# Database Configuration
+db_password = "your-secure-database-password-here"
+
+# Admin Configuration
+admin_email    = "your-email@example.com"
+admin_password = "your-secure-admin-password-here"

@@ -1,0 +1,24 @@
+---
+# Docker configuration for Homepage
+# For configuration options and examples, please see:
+# https://gethomepage.dev/configs/docker/
+
+# Example Docker configurations (uncomment and modify as needed):
+
+# Local Docker daemon via TCP
+# local-docker:
+#   host: 127.0.0.1
+#   port: 2375
+
+# Local Docker daemon via socket
+# local-docker-socket:
+#   socket: /var/run/docker.sock
+
+# Remote Docker daemon
+# remote-docker:
+#   host: your-docker-host.com
+#   port: 2376
+#   tls: true
+#   cert: /path/to/cert.pem
+#   key: /path/to/key.pem
+#   ca: /path/to/ca.pem

@@ -1,0 +1,37 @@
+---
+- name: Upload Homepage Configuration to GCS
+  hosts: localhost
+  connection: local
+  gather_facts: false
+
+  vars:
+    gcs_config_bucket_name: "steffyd-homepage-config" # This should match the config bucket name from Terraform
+    gcs_images_bucket_name: "steffyd-homepage-images" # This should match the images bucket name from Terraform
+    config_dir: "../config"
+
+  tasks:
+    - name: Find YAML configuration files
+      ansible.builtin.find:
+        paths: "{{ config_dir }}"
+        patterns: "*.yaml"
+        recurse: no # Only top-level YAMLs
+      register: yaml_config_files
+
+    - name: Upload YAML configuration files to GCS bucket root
+      ansible.builtin.command: "gsutil cp {{ item.path }} gs://{{ gcs_config_bucket_name }}/{{ item.path | basename }}"
+      loop: "{{ yaml_config_files.files }}"
+      loop_control:
+        label: "{{ item.path | basename }}"
+
+    - name: Find image files
+      ansible.builtin.find:
+        paths: "{{ config_dir }}/images"
+        patterns: "*.png,*.jpeg,*.jpg,*.svg"
+        recurse: no # Only top-level images in the images directory
+      register: image_files
+
+    - name: Upload image files to GCS bucket images subdirectory
+      ansible.builtin.command: "gsutil cp {{ item.path }} gs://{{ gcs_images_bucket_name }}/{{ item.path | basename }}"
+      loop: "{{ image_files.files }}"
+      loop_control:
+        label: "{{ item.path | basename }}"

@@ -1,0 +1,30 @@
+---
+# Proxmox configuration for Homepage
+# For configuration options and examples, please see:
+# https://gethomepage.dev/configs/proxmox/
+
+# Example Proxmox configurations (uncomment and modify as needed):
+
+# Single Proxmox host
+# proxmox-main:
+#   url: https://proxmox.host.or.ip:8006
+#   token: username@pam!Token ID
+#   secret: your-secret-key
+
+# Multiple Proxmox hosts
+# proxmox-cluster-1:
+#   url: https://proxmox1.example.com:8006
+#   token: admin@pam!homepage-token
+#   secret: your-secret-key-1
+# proxmox-cluster-2:
+#   url: https://proxmox2.example.com:8006
+#   token: admin@pam!homepage-token
+#   secret: your-secret-key-2
+
+# Proxmox with custom settings
+# proxmox-custom:
+#   url: https://proxmox.example.com:8006
+#   token: admin@pam!homepage-token
+#   secret: your-secret-key
+#   verifySSL: true
+#   timeout: 30

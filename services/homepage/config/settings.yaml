@@ -1,0 +1,22 @@
+title: steffyd homepage
+description: Homepage for Steffyd
+startUrl: https://steffyd.com
+background: /images/background.png
+favicon: /images/favicon.png
+
+theme: dark
+target: _blank
+quicklaunch:
+  searchDescriptions: true
+  hideInternetSearch: true
+  showSearchSuggestions: true
+  hideVisitURL: true
+  provider: google # google, duckduckgo, bing, baidu, brave or custom
+statusStyle: "dot"
+color: amber
+bookmarksStyle: icons
+headerStyle: clean
+
+layout:
+  Data:
+  Apps:
