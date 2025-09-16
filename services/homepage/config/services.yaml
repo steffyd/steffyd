@@ -12,3 +12,8 @@
       href: https://corellianwarroom.com/
       description: Fantasy Football War Room
       icon: mdi-football
+
+  - Mealie:
+      href: https://mealie.steffyd.com
+      description: Meal planning and recipe management
+      icon: mealie

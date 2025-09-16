@@ -62,14 +62,53 @@ resource "google_project_service" "apis" {
     "run.googleapis.com",
     "sqladmin.googleapis.com",
     "storage.googleapis.com",
-    "dns.googleapis.com",
-    "cloudbuild.googleapis.com"
+    "cloudbuild.googleapis.com",
+    "artifactregistry.googleapis.com"
   ])
   
   project = var.project_id
   service = each.value
   
   disable_on_destroy = false
+}
+
+# Artifact Registry remote repository for GitHub Container Registry
+resource "google_artifact_registry_repository" "ghcr" {
+  location      = var.region
+  repository_id = "ghcr"
+  description   = "Remote repository for GitHub Container Registry"
+  format        = "DOCKER"
+  mode          = "REMOTE_REPOSITORY"
+
+  remote_repository_config {
+    description = "GitHub Container Registry"
+    docker_repository {
+      custom_repository {
+        uri = "https://ghcr.io"
+      }
+    }
+  }
+
+  depends_on = [google_project_service.apis]
+}
+
+
+# GCS bucket for Mealie persistent data storage
+resource "google_storage_bucket" "mealie_data" {
+  name          = "${var.project_id}-mealie-data"
+  location      = "US"
+  force_destroy = false
+
+  uniform_bucket_level_access = true
+
+  lifecycle_rule {
+    condition {
+      age = 30
+    }
+    action {
+      type = "Delete"
+    }
+  }
 }
 
 # Cloud SQL instance for Mealie database
@@ -112,26 +151,43 @@ resource "google_sql_user" "mealie_user" {
   password = var.db_password
 }
 
-# Note: Mealie manages its own data internally and doesn't require a GCS bucket
+
+# Service account for Mealie
+resource "google_service_account" "mealie_sa" {
+  account_id   = "mealie-run-sa"
+  display_name = "Mealie Cloud Run Service Account"
+}
+
+# Grant storage access to Mealie service account
+resource "google_storage_bucket_iam_member" "mealie_storage_admin" {
+  bucket = google_storage_bucket.mealie_data.name
+  role   = "roles/storage.objectAdmin"
+  member = "serviceAccount:${google_service_account.mealie_sa.email}"
+}
+
 
 # Cloud Run service for Mealie
 resource "google_cloud_run_v2_service" "mealie" {
   name     = "mealie"
   location = var.region
+  ingress  = "INGRESS_TRAFFIC_ALL"  # Changed to allow public access
   
   depends_on = [google_project_service.apis]
 
   template {
+    service_account = google_service_account.mealie_sa.email
+    
     containers {
-      image = "ghcr.io/mealie-recipes/mealie:v3.0.2"
+      image = "${var.region}-docker.pkg.dev/${var.project_id}/${google_artifact_registry_repository.ghcr.repository_id}/mealie-recipes/mealie:latest"
       
       ports {
         container_port = 9000
+        name           = "http1"
       }
       
       env {
         name  = "DB_ENGINE"
-        value = "postgresql"
+        value = "postgres"
       }
       
       env {
@@ -146,7 +202,7 @@ resource "google_cloud_run_v2_service" "mealie" {
       
       env {
         name  = "POSTGRES_SERVER"
-        value = google_sql_database_instance.mealie_db.private_ip_address
+        value = google_sql_database_instance.mealie_db.public_ip_address  # Changed to public IP
       }
       
       env {
@@ -160,9 +216,10 @@ resource "google_cloud_run_v2_service" "mealie" {
       }
       
       env {
-        name  = "REDIS_URL"
-        value = "redis://redis:6379"
+        name  = "DATABASE_URL"
+        value = "postgresql://${google_sql_user.mealie_user.name}:${google_sql_user.mealie_user.password}@${google_sql_database_instance.mealie_db.public_ip_address}:5432/${google_sql_database.mealie_database.name}"
       }
+      
       
       env {
         name  = "DEFAULT_GROUP"
@@ -184,6 +241,12 @@ resource "google_cloud_run_v2_service" "mealie" {
         value = "https://${var.mealie_domain}"
       }
       
+      # Mount GCS bucket as a volume for persistent storage
+      volume_mounts {
+        name       = "mealie-data-volume"
+        mount_path = "/app/data"
+      }
+      
       resources {
         limits = {
           cpu    = "1000m"
@@ -196,6 +259,15 @@ resource "google_cloud_run_v2_service" "mealie" {
       min_instance_count = 0
       max_instance_count = 10
     }
+    
+    # Define the volume that connects to our Mealie data GCS bucket
+    volumes {
+      name = "mealie-data-volume"
+      gcs {
+        bucket = google_storage_bucket.mealie_data.name
+        read_only = false
+      }
+    }
   }
   
   traffic {
@@ -204,40 +276,56 @@ resource "google_cloud_run_v2_service" "mealie" {
   }
 }
 
-# IAM policy for Cloud Run
-resource "google_cloud_run_service_iam_policy" "mealie_noauth" {
+# Allow public access to Mealie service
+resource "google_cloud_run_v2_service_iam_member" "public_access" {
   location = google_cloud_run_v2_service.mealie.location
-  project  = google_cloud_run_v2_service.mealie.project
-  service  = google_cloud_run_v2_service.mealie.name
-
-  policy_data = data.google_iam_policy.noauth.policy_data
+  name     = google_cloud_run_v2_service.mealie.name
+  role     = "roles/run.invoker"
+  member   = "allUsers"
 }
 
-data "google_iam_policy" "noauth" {
-  binding {
-    role = "roles/run.invoker"
-    members = [
-      "allUsers",
-    ]
+# Domain mapping for mealie.steffyd.com
+resource "google_cloud_run_domain_mapping" "mealie_domain" {
+  location = google_cloud_run_v2_service.mealie.location
+  name     = "mealie.steffyd.com"
+
+  metadata {
+    namespace = var.project_id
+  }
+
+  spec {
+    route_name = google_cloud_run_v2_service.mealie.name
   }
 }
 
-# Cloud DNS zone for the domain
-resource "google_dns_managed_zone" "mealie_zone" {
-  name        = "mealie-zone"
-  dns_name    = "mealie.steffyd.com."
-  description = "DNS zone for Mealie service"
+# DNS Configuration
+# Use existing DNS zone
+data "google_dns_managed_zone" "steffyd_zone" {
+  name = "steffyd-lb-zone"
 }
 
-# DNS record for Mealie
-resource "google_dns_record_set" "mealie_dns" {
-  name = google_dns_managed_zone.mealie_zone.dns_name
-  type = "A"
-  ttl  = 300
+# Get the Cloud Run service URLs
+data "google_cloud_run_v2_service" "homepage" {
+  name     = "homepage"
+  location = var.region
+}
 
-  managed_zone = google_dns_managed_zone.mealie_zone.name
+# CNAME record for steffyd.com pointing to homepage service
+resource "google_dns_record_set" "homepage_cname" {
+  name         = data.google_dns_managed_zone.steffyd_zone.dns_name
+  type         = "CNAME"
+  ttl          = 300
+  managed_zone = data.google_dns_managed_zone.steffyd_zone.name
+  rrdatas      = [replace(data.google_cloud_run_v2_service.homepage.uri, "https://", "")]
+}
 
-  rrdatas = [google_cloud_run_v2_service.mealie.uri]
+# CNAME record for mealie.steffyd.com pointing to mealie service
+resource "google_dns_record_set" "mealie_cname" {
+  name         = "mealie.steffyd.com."
+  type         = "CNAME"
+  ttl          = 300
+  managed_zone = data.google_dns_managed_zone.steffyd_zone.name
+  rrdatas      = [replace(google_cloud_run_v2_service.mealie.uri, "https://", "")]
 }
 
 # Outputs
@@ -245,10 +333,31 @@ output "mealie_url" {
   value = google_cloud_run_v2_service.mealie.uri
 }
 
-output "dns_name_servers" {
-  value = google_dns_managed_zone.mealie_zone.name_servers
+output "mealie_domain_url" {
+  description = "The custom domain URL of the Mealie service."
+  value       = "https://mealie.steffyd.com"
 }
 
 output "database_connection_name" {
   value = google_sql_database_instance.mealie_db.connection_name
 }
+
+output "storage_bucket" {
+  value = google_storage_bucket.mealie_data.name
+}
+
+output "mealie_image_url" {
+  description = "The full image URL for the Mealie service"
+  value       = "${var.region}-docker.pkg.dev/${var.project_id}/${google_artifact_registry_repository.ghcr.repository_id}/mealie-recipes/mealie:latest"
+}
+
+output "dns_name_servers" {
+  description = "The nameservers for the managed DNS zone. Update these in your domain registrar."
+  value       = data.google_dns_managed_zone.steffyd_zone.name_servers
+}
+
+output "homepage_service_url" {
+  description = "The Cloud Run service URL for homepage"
+  value       = data.google_cloud_run_v2_service.homepage.uri
+}
+

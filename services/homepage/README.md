@@ -2,6 +2,22 @@
 
 This directory contains the configuration for the `homepage` service.
 
+This service is deployed as a Cloud Run service with an OAuth2-proxy sidecar container. The OAuth2-proxy handles authentication and forwards traffic internally to the homepage container. Access is controlled by the regional load balancer and OAuth2-proxy sidecar.
+
+## Architecture
+
+The homepage service uses a **sidecar pattern** where two containers run in the same Cloud Run service:
+
+- **OAuth2-proxy sidecar** (port 4180): Handles Google OAuth authentication
+- **Homepage container** (port 3000): Serves the actual homepage content
+
+### Security Model
+
+- **External Access**: Only through `steffyd.com` via the load balancer
+- **Authentication**: OAuth2-proxy sidecar handles Google OAuth authentication
+- **Internal Communication**: OAuth2-proxy forwards to homepage container via `127.0.0.1:3000`
+- **Direct Access**: Homepage container is not directly accessible from the internet
+
 ## Local Testing
 
 You can test changes to the homepage configuration locally before deploying them. This allows you to see how your dashboard will look and behave.
@@ -35,37 +51,9 @@ The Terraform configuration will provision all necessary GCP resources. Before r
 
 2.  **Enabled GCP APIs:** Ensure the following APIs are enabled in your `steffyd` GCP project. Terraform will prompt you if any are missing, but it's best to enable them first:
     - Cloud Run API (`run.googleapis.com`)
-    - Identity-Aware Proxy (IAP) API (`iap.googleapis.com`)
-    - Cloud DNS API (`dns.googleapis.com`)
     - Cloud Storage API (`storage.googleapis.com`)
     - Identity and Access Management (IAM) API (`iam.googleapis.com`)
     - Cloud Build API (`cloudbuild.googleapis.com`)
-
-3.  **Configured IAP OAuth Consent Screen:** The service is secured with Identity-Aware Proxy (IAP). You **must** configure the OAuth consent screen in the GCP console before deploying. This is a one-time setup for your project.
-    1.  Navigate to the [OAuth consent screen](https://console.cloud.google.com/apis/credentials/consent) in the GCP Console.
-    2.  For "User Type", select **External** and click **Create**.
-    3.  On the next page, fill in the required fields:
-        - **App name:** `Steffyd Homepage` (or a name of your choice).
-        - **User support email:** Select your email address.
-        - **Developer contact information:** Enter your email address.
-    4.  Click **Save and Continue**.
-    5.  On the "Scopes" page, click **Save and Continue** (no scopes are needed for IAP).
-    6.  On the "Test users" page, click **Save and Continue**.
-    7.  You will be returned to the summary page. Your consent screen is now configured.
-
-4.  **OAuth2 Credentials:** You need to create OAuth2 credentials for IAP:
-    1.  Navigate to [APIs & Services > Credentials](https://console.cloud.google.com/apis/credentials) in the GCP Console.
-    2.  Click **Create Credentials** > **OAuth 2.0 Client IDs**.
-    3.  Select **Web application** as the application type.
-    4.  Give it a name (e.g., "Homepage IAP Client").
-    5.  Add authorized redirect URIs (you can use `https://steffyd.com` for now).
-    6.  Click **Create** and note down the Client ID and Client Secret.
-
-5.  **Variables:** Copy `terraform.tfvars.example` to `terraform.tfvars` and fill in your OAuth2 credentials:
-    ```bash
-    cp terraform.tfvars.example terraform.tfvars
-    # Edit terraform.tfvars with your OAuth2 credentials
-    ```
 
 ### Ansible Prerequisites
 
@@ -107,7 +95,6 @@ Follow these steps to deploy the Homepage service:
         ```bash
         terraform apply
         ```
-    *   After `terraform apply` completes, note the `dns_name_servers` output. You will need to update your domain registrar (e.g., Squarespace) to use these nameservers for `steffyd.com`.
 
 3.  **Upload Configuration (Ansible):**
     *   Navigate to the Ansible directory:

@@ -2,13 +2,12 @@
 # Copy this file to terraform.tfvars and fill in your actual values
 # DO NOT commit terraform.tfvars to version control
 
-# OAuth2 credentials for IAP (Identity-Aware Proxy)
-# Get these from the Google Cloud Console > APIs & Services > Credentials
-oauth2_client_id     = "your-oauth2-client-id.apps.googleusercontent.com"
-oauth2_client_secret = "your-oauth2-client-secret"
-
 # Optional: Override default values
 # project_id = "steffyd"
 # region = "us-central1"
 # domain_name = "steffyd.com"
 # authorized_user_email = "your-email@gmail.com"
+
+# Mealie API key for widget integration
+# Get this from your Mealie instance: Profile > Manage Your API Tokens > Generate
+# mealie_api_key = "your-mealie-api-key-here"
