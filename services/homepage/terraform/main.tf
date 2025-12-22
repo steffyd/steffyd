@@ -119,7 +119,7 @@ resource "google_cloud_run_v2_service" "homepage_service" {
     # OAuth2-proxy sidecar container
     containers {
       name  = "oauth2-proxy"
-      image = "bitnami/oauth2-proxy:7.6.0"
+      image = "mirror.gcr.io/bitnami/oauth2-proxy@sha256:bcf515026e66f1c869513487bee973fdf174eea305bfe4fc2db51c523a70d213"
       
       env {
         name = "OAUTH2_PROXY_HTTP_ADDRESS"
@@ -183,6 +183,7 @@ resource "google_cloud_run_v2_service" "homepage_service" {
           cpu    = "500m"
           memory = "256Mi"
         }
+        cpu_idle = true
       }
       
       
