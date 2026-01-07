@@ -1,0 +1,55 @@
+name: Deploy Changed Services
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  detect-changes:
+    runs-on: ubuntu-latest
+    outputs:
+      homepage_changed: ${{ steps.filter.outputs.homepage_changed }}
+      mealie_changed: ${{ steps.filter.outputs.mealie_changed }}
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Check for homepage changes
+        id: filter
+        run: |
+          homepage=$(git diff --name-only ${{ github.sha }}^ ${{ github.sha }} | grep '^services/homepage/')
+          mealie=$(git diff --name-only ${{ github.sha }}^ ${{ github.sha }} | grep '^services/mealie/')
+          echo "homepage_changed=$([[ -n \"$homepage\" ]] && echo true || echo false)" >> $GITHUB_OUTPUT
+          echo "mealie_changed=$([[ -n \"$mealie\" ]] && echo true || echo false)" >> $GITHUB_OUTPUT
+
+  deploy-homepage:
+    needs: detect-changes
+    if: needs.detect-changes.outputs.homepage_changed == 'true'
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+      - name: Setup Terraform
+        uses: hashicorp/setup-terraform@v2
+      - name: Terraform Apply (homepage)
+        working-directory: services/homepage/terraform
+        run: terraform init && terraform apply -auto-approve
+      - name: Setup Ansible
+        uses: ansible/ansible-github-actions@v1.0.0
+      - name: Run Ansible Playbook (homepage)
+        working-directory: services/homepage/ansible
+        run: ansible-playbook upload_config.yml
+
+  deploy-mealie:
+    needs: detect-changes
+    if: needs.detect-changes.outputs.mealie_changed == 'true'
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+      - name: Setup Terraform
+        uses: hashicorp/setup-terraform@v2
+      - name: Terraform Apply (mealie)
+        working-directory: services/mealie/terraform
+        run: terraform init && terraform apply -auto-approve

@@ -2,7 +2,7 @@
 
 This directory contains the configuration for the `homepage` service.
 
-This service is deployed as a Cloud Run service with an OAuth2-proxy sidecar container. The OAuth2-proxy handles authentication and forwards traffic internally to the homepage container. Access is controlled by the regional load balancer and OAuth2-proxy sidecar.
+This service is deployed as a Cloud Run service with an OAuth2-proxy sidecar container. The OAuth2-proxy handles authentication and forwards traffic internally to the homepage container. Access is controlled by the OAuth2-proxy sidecar.
 
 ## Architecture
 
@@ -13,7 +13,7 @@ The homepage service uses a **sidecar pattern** where two containers run in the 
 
 ### Security Model
 
-- **External Access**: Only through `steffyd.com` via the load balancer
+- **External Access**: Only through `steffyd.com`
 - **Authentication**: OAuth2-proxy sidecar handles Google OAuth authentication
 - **Internal Communication**: OAuth2-proxy forwards to homepage container via `127.0.0.1:3000`
 - **Direct Access**: Homepage container is not directly accessible from the internet
