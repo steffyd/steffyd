@@ -100,15 +100,6 @@ resource "google_storage_bucket" "mealie_data" {
   force_destroy = false
 
   uniform_bucket_level_access = true
-
-  lifecycle_rule {
-    condition {
-      age = 30
-    }
-    action {
-      type = "Delete"
-    }
-  }
 }
 
 # Cloud SQL instance for Mealie database
