@@ -1,3 +1,5 @@
+Access is controlled by the OAuth2-proxy sidecar.
+- **External Access**: Only through `steffyd.com`
 # Homepage Service
 
 This directory contains the configuration for the `homepage` service.
