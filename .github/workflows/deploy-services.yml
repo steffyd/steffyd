@@ -5,30 +5,84 @@ on:
     branches:
       - main
 
+env:
+  GCP_PROJECT_ID: ${{ secrets.GCP_PROJECT_ID }}
+  GOOGLE_APPLICATION_CREDENTIALS: ${{ github.workspace }}/gcp-key.json
+
 jobs:
   deploy-homepage:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout code
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
+
+      - name: Write GCP service account key
+        run: |
+          echo "${{ secrets.GCP_SA_KEY }}" > $GOOGLE_APPLICATION_CREDENTIALS
+
+      - name: Setup gcloud
+        uses: google-github-actions/setup-gcloud@v2
+        with:
+          project_id: ${{ env.GCP_PROJECT_ID }}
+          service_account_key: ${{ secrets.GCP_SA_KEY }}
+          export_default_credentials: true
+
       - name: Setup Terraform
-        uses: hashicorp/setup-terraform@v2
-      - name: Terraform Apply (homepage)
+        uses: hashicorp/setup-terraform@v3
+
+      - name: Terraform Init & Apply (homepage)
         working-directory: services/homepage/terraform
-        run: terraform init && terraform apply -auto-approve
-      - name: Setup Ansible
-        uses: ansible/ansible-github-actions@v1.0.0
+        env:
+          GOOGLE_APPLICATION_CREDENTIALS: ${{ env.GOOGLE_APPLICATION_CREDENTIALS }}
+          TF_IN_AUTOMATION: true
+        run: |
+          terraform init -input=false
+          terraform apply -auto-approve -input=false
+
+      - name: Install Python and Ansible
+        run: |
+          sudo apt-get update -y
+          sudo apt-get install -y python3 python3-pip
+          python3 -m pip install --upgrade pip
+          python3 -m pip install ansible
+
+      - name: Install Ansible Galaxy requirements
+        working-directory: services/homepage/ansible
+        run: |
+          if [ -f requirements.yml ]; then ansible-galaxy collection install -r requirements.yml; fi
+
       - name: Run Ansible Playbook (homepage)
         working-directory: services/homepage/ansible
-        run: ansible-playbook upload_config.yml
+        env:
+          GCP_PROJECT_ID: ${{ env.GCP_PROJECT_ID }}
+        run: |
+          ansible-playbook upload_config.yml
 
   deploy-mealie:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout code
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
+
+      - name: Write GCP service account key
+        run: |
+          echo "${{ secrets.GCP_SA_KEY }}" > $GOOGLE_APPLICATION_CREDENTIALS
+
+      - name: Setup gcloud
+        uses: google-github-actions/setup-gcloud@v2
+        with:
+          project_id: ${{ env.GCP_PROJECT_ID }}
+          service_account_key: ${{ secrets.GCP_SA_KEY }}
+          export_default_credentials: true
+
       - name: Setup Terraform
-        uses: hashicorp/setup-terraform@v2
-      - name: Terraform Apply (mealie)
+        uses: hashicorp/setup-terraform@v3
+
+      - name: Terraform Init & Apply (mealie)
         working-directory: services/mealie/terraform
-        run: terraform init && terraform apply -auto-approve
+        env:
+          GOOGLE_APPLICATION_CREDENTIALS: ${{ env.GOOGLE_APPLICATION_CREDENTIALS }}
+          TF_IN_AUTOMATION: true
+        run: |
+          terraform init -input=false
+          terraform apply -auto-approve -input=false
